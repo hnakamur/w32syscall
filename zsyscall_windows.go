@@ -15,21 +15,6 @@ var (
 	procRegSetKeyValueW    = modadvapi32.NewProc("RegSetKeyValueW")
 )
 
-const (
-	RRF_RT_ANY           = 0x0000ffff
-	RRF_RT_DWORD         = 0x00000018
-	RRF_RT_QWORD         = 0x00000048
-	RRF_RT_REG_BINARY    = 0x00000008
-	RRF_RT_REG_DWORD     = 0x00000010
-	RRF_RT_REG_EXPAND_SZ = 0x00000004
-	RRF_RT_REG_MULTI_SZ  = 0x00000020
-	RRF_RT_REG_NONE      = 0x00000001
-	RRF_RT_REG_QWORD     = 0x00000040
-	RRF_RT_REG_SZ        = 0x00000002
-	RRF_NOEXPAND         = 0x10000000
-	RRF_ZEROONFAILURE    = 0x20000000
-)
-
 func RegCreateKeyEx(key syscall.Handle, subkey *uint16, reserved uint32, class *uint16, options uint32, desiredAccess uint32, securityAttributes *syscall.SecurityAttributes, result *syscall.Handle, disposition *uint32) (regerrno error) {
 	r0, _, _ := syscall.Syscall9(procRegCreateKeyExW.Addr(), 9, uintptr(key), uintptr(unsafe.Pointer(subkey)), uintptr(reserved), uintptr(unsafe.Pointer(class)), uintptr(options), uintptr(desiredAccess), uintptr(unsafe.Pointer(securityAttributes)), uintptr(unsafe.Pointer(result)), uintptr(unsafe.Pointer(disposition)))
 	if r0 != 0 {
