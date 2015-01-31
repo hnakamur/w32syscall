@@ -8,6 +8,7 @@ import (
 var (
 	modkernel32 = syscall.NewLazyDLL("kernel32.dll")
 	modadvapi32 = syscall.NewLazyDLL("advapi32.dll")
+	moduser32   = syscall.NewLazyDLL("user32.dll")
 
 	procGetDynamicTimeZoneInformation = modkernel32.NewProc("GetDynamicTimeZoneInformation")
 	procSetDynamicTimeZoneInformation = modkernel32.NewProc("SetDynamicTimeZoneInformation")
@@ -19,6 +20,8 @@ var (
 	procRegDeleteTreeW        = modadvapi32.NewProc("RegDeleteTreeW")
 	procRegGetValueW          = modadvapi32.NewProc("RegGetValueW")
 	procRegSetKeyValueW       = modadvapi32.NewProc("RegSetKeyValueW")
+
+	procExitWindowsEx = moduser32.NewProc("ExitWindowsEx")
 )
 
 func GetDynamicTimeZoneInformation(timeZoneInformation *DynamicTimeZoneInformation) (err error) {
@@ -126,6 +129,18 @@ func RegSetKeyValue(key syscall.Handle, subkey *uint16, valname *uint16, valtype
 	r0, _, _ := syscall.Syscall6(procRegSetKeyValueW.Addr(), 6, uintptr(key), uintptr(unsafe.Pointer(subkey)), uintptr(unsafe.Pointer(valname)), uintptr(valtype), uintptr(unsafe.Pointer(buf)), uintptr(buflen))
 	if r0 != 0 {
 		regerrno = syscall.Errno(r0)
+	}
+	return
+}
+
+func ExitWindowsEx(flags uint, reason uint32) (err error) {
+	r1, _, e1 := syscall.Syscall(procExitWindowsEx.Addr(), 2, uintptr(flags), uintptr(reason), 0)
+	if r1 != 0 {
+		if e1 != 0 {
+			err = error(e1)
+		} else {
+			err = syscall.EINVAL
+		}
 	}
 	return
 }
