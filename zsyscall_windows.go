@@ -8,6 +8,7 @@ import (
 var (
 	modkernel32 = syscall.NewLazyDLL("kernel32.dll")
 	modadvapi32 = syscall.NewLazyDLL("advapi32.dll")
+	modcredui   = syscall.NewLazyDLL("credui.dll")
 
 	procGetDynamicTimeZoneInformation = modkernel32.NewProc("GetDynamicTimeZoneInformation")
 	procSetDynamicTimeZoneInformation = modkernel32.NewProc("SetDynamicTimeZoneInformation")
@@ -19,6 +20,9 @@ var (
 	procRegDeleteTreeW        = modadvapi32.NewProc("RegDeleteTreeW")
 	procRegGetValueW          = modadvapi32.NewProc("RegGetValueW")
 	procRegSetKeyValueW       = modadvapi32.NewProc("RegSetKeyValueW")
+
+	procCredUIPromptForCredentialsW        = modcredui.NewProc("CredUIPromptForCredentialsW")
+	procCredUICmdLinePromptForCredentialsW = modcredui.NewProc("CredUICmdLinePromptForCredentialsW")
 )
 
 func GetDynamicTimeZoneInformation(timeZoneInformation *DynamicTimeZoneInformation) (err error) {
@@ -126,6 +130,62 @@ func RegSetKeyValue(key syscall.Handle, subkey *uint16, valname *uint16, valtype
 	r0, _, _ := syscall.Syscall6(procRegSetKeyValueW.Addr(), 6, uintptr(key), uintptr(unsafe.Pointer(subkey)), uintptr(unsafe.Pointer(valname)), uintptr(valtype), uintptr(unsafe.Pointer(buf)), uintptr(buflen))
 	if r0 != 0 {
 		regerrno = syscall.Errno(r0)
+	}
+	return
+}
+
+func CredUIPromptForCredentials(
+	uiInfo *CreduiInfo,
+	targetName *uint16,
+	reserved syscall.Handle,
+	authError uint32,
+	userName *uint16,
+	userNameMaxChars uint32,
+	password *uint16,
+	passwordMaxChars uint32,
+	save *uint32,
+	flags uint32) (err error) {
+	r0, _, _ := syscall.Syscall12(procCredUIPromptForCredentialsW.Addr(), 10,
+		uintptr(unsafe.Pointer(uiInfo)),
+		uintptr(unsafe.Pointer(targetName)),
+		uintptr(unsafe.Pointer(reserved)),
+		uintptr(authError),
+		uintptr(unsafe.Pointer(userName)),
+		uintptr(userNameMaxChars),
+		uintptr(unsafe.Pointer(password)),
+		uintptr(passwordMaxChars),
+		uintptr(unsafe.Pointer(save)),
+		uintptr(flags),
+		0,
+		0)
+	if r0 != 0 {
+		err = syscall.Errno(r0)
+	}
+	return
+}
+
+func CredUICmdLinePromptForCredentials(
+	targetName *uint16,
+	reserved syscall.Handle,
+	authError uint32,
+	userName *uint16,
+	userNameMaxChars uint32,
+	password *uint16,
+	passwordMaxChars uint32,
+	save *uint32,
+	flags uint32) (err error) {
+	r0, _, _ := syscall.Syscall9(procCredUICmdLinePromptForCredentialsW.Addr(), 9,
+		uintptr(unsafe.Pointer(targetName)),
+		uintptr(unsafe.Pointer(reserved)),
+		uintptr(authError),
+		uintptr(unsafe.Pointer(userName)),
+		uintptr(userNameMaxChars),
+		uintptr(unsafe.Pointer(password)),
+		uintptr(passwordMaxChars),
+		uintptr(unsafe.Pointer(save)),
+		uintptr(flags))
+	if r0 != 0 {
+		err = syscall.Errno(r0)
 	}
 	return
 }
