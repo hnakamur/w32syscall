@@ -2,6 +2,35 @@ package w32syscall
 
 import "syscall"
 
+type ThreadEntry32 struct {
+	Size           uint32
+	Usage          uint32
+	ThreadID       uint32
+	OwnerProcessID uint32
+	BasePri        int32
+	DeltaPri       int32
+	Flags          uint32
+}
+
+type Rect struct {
+	Left   uint32
+	Top    uint32
+	Right  uint32
+	Bottom uint32
+}
+
+type GuiThreadInfo struct {
+	Size      uint32
+	Flags     uint32
+	Active    syscall.Handle
+	Focus     syscall.Handle
+	Capture   syscall.Handle
+	MenuOwner syscall.Handle
+	MoveSize  syscall.Handle
+	Caret     syscall.Handle
+	CaretRect Rect
+}
+
 // Registry
 
 const (

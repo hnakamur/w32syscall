@@ -12,6 +12,8 @@ var (
 
 	procGetDynamicTimeZoneInformation = modkernel32.NewProc("GetDynamicTimeZoneInformation")
 	procSetDynamicTimeZoneInformation = modkernel32.NewProc("SetDynamicTimeZoneInformation")
+	procThread32First                 = modkernel32.NewProc("Thread32First")
+	procThread32Next                  = modkernel32.NewProc("Thread32Next")
 
 	procAdjustTokenPrivileges = modadvapi32.NewProc("AdjustTokenPrivileges")
 	procLookupPrivilegeValue  = modadvapi32.NewProc("LookupPrivilegeValueW")
@@ -21,7 +23,8 @@ var (
 	procRegGetValueW          = modadvapi32.NewProc("RegGetValueW")
 	procRegSetKeyValueW       = modadvapi32.NewProc("RegSetKeyValueW")
 
-	procExitWindowsEx = moduser32.NewProc("ExitWindowsEx")
+	procExitWindowsEx    = moduser32.NewProc("ExitWindowsEx")
+	procGetGUIThreadInfo = moduser32.NewProc("GetGUIThreadInfo")
 )
 
 func GetDynamicTimeZoneInformation(timeZoneInformation *DynamicTimeZoneInformation) (err error) {
@@ -136,6 +139,42 @@ func RegSetKeyValue(key syscall.Handle, subkey *uint16, valname *uint16, valtype
 func ExitWindowsEx(flags uint, reason uint32) (err error) {
 	r1, _, e1 := syscall.Syscall(procExitWindowsEx.Addr(), 2, uintptr(flags), uintptr(reason), 0)
 	if r1 != 0 {
+		if e1 != 0 {
+			err = error(e1)
+		} else {
+			err = syscall.EINVAL
+		}
+	}
+	return
+}
+
+func GetGUIThreadInfo(idThread uint32, lpgui *GuiThreadInfo) (err error) {
+	r1, _, e1 := syscall.Syscall(procGetGUIThreadInfo.Addr(), 2, uintptr(idThread), uintptr(unsafe.Pointer(lpgui)), 0)
+	if r1 != 0 {
+		if e1 != 0 {
+			err = error(e1)
+		} else {
+			err = syscall.EINVAL
+		}
+	}
+	return
+}
+
+func Thread32First(snapshot syscall.Handle, threadEntry *ThreadEntry32) (err error) {
+	r1, _, e1 := syscall.Syscall(procThread32First.Addr(), 2, uintptr(snapshot), uintptr(unsafe.Pointer(threadEntry)), 0)
+	if r1 == 0 {
+		if e1 != 0 {
+			err = error(e1)
+		} else {
+			err = syscall.EINVAL
+		}
+	}
+	return
+}
+
+func Thread32Next(snapshot syscall.Handle, threadEntry *ThreadEntry32) (err error) {
+	r1, _, e1 := syscall.Syscall(procThread32Next.Addr(), 2, uintptr(snapshot), uintptr(unsafe.Pointer(threadEntry)), 0)
+	if r1 == 0 {
 		if e1 != 0 {
 			err = error(e1)
 		} else {
