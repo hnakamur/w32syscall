@@ -21,7 +21,10 @@ var (
 	procRegGetValueW          = modadvapi32.NewProc("RegGetValueW")
 	procRegSetKeyValueW       = modadvapi32.NewProc("RegSetKeyValueW")
 
-	procExitWindowsEx = moduser32.NewProc("ExitWindowsEx")
+	procExitWindowsEx       = moduser32.NewProc("ExitWindowsEx")
+	procFindWindowW         = moduser32.NewProc("FindWindowW")
+	procGetForegroundWindow = moduser32.NewProc("GetForegroundWindow")
+	procSetForegroundWindow = moduser32.NewProc("SetForegroundWindow")
 )
 
 func GetDynamicTimeZoneInformation(timeZoneInformation *DynamicTimeZoneInformation) (err error) {
@@ -143,4 +146,28 @@ func ExitWindowsEx(flags uint, reason uint32) (err error) {
 		}
 	}
 	return
+}
+
+func FindWindowW(className, windowName *uint16) (handle syscall.Handle, err error) {
+	r1, _, e1 := syscall.Syscall(procFindWindowW.Addr(), 2, uintptr(unsafe.Pointer(className)), uintptr(unsafe.Pointer(windowName)), 0)
+	if r1 != 0 {
+		handle = syscall.Handle(r1)
+	} else {
+		if e1 != 0 {
+			err = error(e1)
+		} else {
+			err = syscall.EINVAL
+		}
+	}
+	return
+}
+
+func SetForegroundWindow(hwnd syscall.Handle) bool {
+	r1, _, _ := syscall.Syscall(procSetForegroundWindow.Addr(), 1, uintptr(hwnd), 0, 0)
+	return r1 != 0
+}
+
+func GetForegroundWindow() syscall.Handle {
+	r1, _, _ := syscall.Syscall(procGetForegroundWindow.Addr(), 0, 0, 0, 0)
+	return syscall.Handle(r1)
 }
