@@ -25,6 +25,7 @@ var (
 	procEnumWindows         = moduser32.NewProc("EnumWindows")
 	procExitWindowsEx       = moduser32.NewProc("ExitWindowsEx")
 	procFindWindowW         = moduser32.NewProc("FindWindowW")
+	procGetClassNameW       = moduser32.NewProc("GetClassNameW")
 	procGetClassLongW       = moduser32.NewProc("GetClassLongW")
 	procGetForegroundWindow = moduser32.NewProc("GetForegroundWindow")
 	procSetForegroundWindow = moduser32.NewProc("SetForegroundWindow")
@@ -215,6 +216,14 @@ func GetForegroundWindow() syscall.Handle {
 
 func GetClassLong(hwnd syscall.Handle, index int) (result uintptr, err error) {
 	result, _, e1 := syscall.Syscall(procGetClassLongW.Addr(), 2, uintptr(hwnd), uintptr(index), 0)
+	if result == 0 {
+		err = error(e1)
+	}
+	return
+}
+
+func GetClassName(hwnd syscall.Handle, buf []uint16, buflen int) (err error) {
+	result, _, e1 := syscall.Syscall(procGetClassNameW.Addr(), 3, uintptr(hwnd), uintptr(unsafe.Pointer(&buf[0])), uintptr(buflen))
 	if result == 0 {
 		err = error(e1)
 	}
