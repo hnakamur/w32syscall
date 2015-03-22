@@ -176,7 +176,7 @@ func GetForegroundWindow() syscall.Handle {
 func SendInput(inputCount uint, inputs *Input, byteSize int) (count int, err error) {
 	r1, _, e1 := syscall.Syscall(procSendInput.Addr(), 3, uintptr(inputCount), uintptr(unsafe.Pointer(inputs)), uintptr(byteSize))
 	if r1 != 0 {
-		count = int(count)
+		count = int(r1)
 	} else {
 		if e1 != 0 {
 			err = error(e1)
