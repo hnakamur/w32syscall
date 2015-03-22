@@ -780,3 +780,19 @@ const (
 	WM_APP                            = 0x8000
 	WM_USER                           = 0x0400
 )
+
+/*
+ * Class field offsets for GetClassLong()
+ */
+const (
+	GCL_MENUNAME      = (-8)
+	GCL_HBRBACKGROUND = (-10)
+	GCL_HCURSOR       = (-12)
+	GCL_HICON         = (-14)
+	GCL_HMODULE       = (-16)
+	GCL_CBWNDEXTRA    = (-18)
+	GCL_CBCLSEXTRA    = (-20)
+	GCL_WNDPROC       = (-24)
+	GCL_STYLE         = (-26)
+	GCW_ATOM          = (-32)
+)

@@ -25,6 +25,7 @@ var (
 	procEnumWindows         = moduser32.NewProc("EnumWindows")
 	procExitWindowsEx       = moduser32.NewProc("ExitWindowsEx")
 	procFindWindowW         = moduser32.NewProc("FindWindowW")
+	procGetClassLongW       = moduser32.NewProc("GetClassLongW")
 	procGetForegroundWindow = moduser32.NewProc("GetForegroundWindow")
 	procSetForegroundWindow = moduser32.NewProc("SetForegroundWindow")
 	procSendInput           = moduser32.NewProc("SendInput")
@@ -210,6 +211,14 @@ func SetForegroundWindow(hwnd syscall.Handle) bool {
 func GetForegroundWindow() syscall.Handle {
 	r1, _, _ := syscall.Syscall(procGetForegroundWindow.Addr(), 0, 0, 0, 0)
 	return syscall.Handle(r1)
+}
+
+func GetClassLong(hwnd syscall.Handle, index int) (result uintptr, err error) {
+	result, _, e1 := syscall.Syscall(procGetClassLongW.Addr(), 2, uintptr(hwnd), uintptr(index), 0)
+	if result == 0 {
+		err = error(e1)
+	}
+	return
 }
 
 func SendInput(inputCount uint, inputs *Input, byteSize int) (count int, err error) {
