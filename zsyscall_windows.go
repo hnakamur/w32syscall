@@ -21,6 +21,7 @@ var (
 	procRegGetValueW          = modadvapi32.NewProc("RegGetValueW")
 	procRegSetKeyValueW       = modadvapi32.NewProc("RegSetKeyValueW")
 
+	procEnumWindows         = moduser32.NewProc("EnumWindows")
 	procExitWindowsEx       = moduser32.NewProc("ExitWindowsEx")
 	procFindWindowW         = moduser32.NewProc("FindWindowW")
 	procGetForegroundWindow = moduser32.NewProc("GetForegroundWindow")
@@ -134,6 +135,24 @@ func RegSetKeyValue(key syscall.Handle, subkey *uint16, valname *uint16, valtype
 	r0, _, _ := syscall.Syscall6(procRegSetKeyValueW.Addr(), 6, uintptr(key), uintptr(unsafe.Pointer(subkey)), uintptr(unsafe.Pointer(valname)), uintptr(valtype), uintptr(unsafe.Pointer(buf)), uintptr(buflen))
 	if r0 != 0 {
 		regerrno = syscall.Errno(r0)
+	}
+	return
+}
+
+func EnumWindows(callback func(hwnd syscall.Handle, lparam uintptr) bool, lparam uintptr) (err error) {
+	cb := func(hwnd syscall.Handle, lparam uintptr) int {
+		if callback(hwnd, lparam) {
+			return 1
+		} else {
+			return 0
+		}
+	}
+	r1, _, e1 := syscall.Syscall(procEnumWindows.Addr(), 2, syscall.NewCallback(cb), lparam, 0)
+	if r1 != 0 {
+		if e1 != 0 {
+			err = error(e1)
+			return
+		}
 	}
 	return
 }
