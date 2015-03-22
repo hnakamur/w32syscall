@@ -190,7 +190,7 @@ func ExitWindowsEx(flags uint, reason uint32) (err error) {
 	return
 }
 
-func FindWindowW(className, windowName *uint16) (handle syscall.Handle, err error) {
+func FindWindow(className, windowName *uint16) (handle syscall.Handle, err error) {
 	r1, _, e1 := syscall.Syscall(procFindWindowW.Addr(), 2, uintptr(unsafe.Pointer(className)), uintptr(unsafe.Pointer(windowName)), 0)
 	if r1 != 0 {
 		handle = syscall.Handle(r1)
