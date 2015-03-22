@@ -26,6 +26,7 @@ var (
 	procGetForegroundWindow = moduser32.NewProc("GetForegroundWindow")
 	procSetForegroundWindow = moduser32.NewProc("SetForegroundWindow")
 	procSendInput           = moduser32.NewProc("SendInput")
+	procSendMessageW        = moduser32.NewProc("SendMessageW")
 )
 
 func GetDynamicTimeZoneInformation(timeZoneInformation *DynamicTimeZoneInformation) (err error) {
@@ -183,6 +184,15 @@ func SendInput(inputCount uint, inputs *Input, byteSize int) (count int, err err
 		} else {
 			err = syscall.EINVAL
 		}
+	}
+	return
+}
+
+func SendMessage(hwnd syscall.Handle, msg uint32, wparam, lparam uintptr) (result uintptr, err error) {
+	result, _, e1 := syscall.Syscall6(procSendMessageW.Addr(), 4, uintptr(hwnd), uintptr(msg), wparam, lparam, 0, 0)
+	if e1 != 0 {
+		err = error(e1)
+		return
 	}
 	return
 }
