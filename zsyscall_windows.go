@@ -21,16 +21,17 @@ var (
 	procRegGetValueW          = modadvapi32.NewProc("RegGetValueW")
 	procRegSetKeyValueW       = modadvapi32.NewProc("RegSetKeyValueW")
 
-	procEnumChildWindows    = moduser32.NewProc("EnumChildWindows")
-	procEnumWindows         = moduser32.NewProc("EnumWindows")
-	procExitWindowsEx       = moduser32.NewProc("ExitWindowsEx")
-	procFindWindowW         = moduser32.NewProc("FindWindowW")
-	procGetClassNameW       = moduser32.NewProc("GetClassNameW")
-	procGetClassLongW       = moduser32.NewProc("GetClassLongW")
-	procGetForegroundWindow = moduser32.NewProc("GetForegroundWindow")
-	procSetForegroundWindow = moduser32.NewProc("SetForegroundWindow")
-	procSendInput           = moduser32.NewProc("SendInput")
-	procSendMessageW        = moduser32.NewProc("SendMessageW")
+	procEnumChildWindows         = moduser32.NewProc("EnumChildWindows")
+	procEnumWindows              = moduser32.NewProc("EnumWindows")
+	procExitWindowsEx            = moduser32.NewProc("ExitWindowsEx")
+	procFindWindowW              = moduser32.NewProc("FindWindowW")
+	procGetClassNameW            = moduser32.NewProc("GetClassNameW")
+	procGetClassLongW            = moduser32.NewProc("GetClassLongW")
+	procGetForegroundWindow      = moduser32.NewProc("GetForegroundWindow")
+	procSetForegroundWindow      = moduser32.NewProc("SetForegroundWindow")
+	procSendInput                = moduser32.NewProc("SendInput")
+	procSendMessageW             = moduser32.NewProc("SendMessageW")
+	procGetWindowThreadProcessId = moduser32.NewProc("GetWindowThreadProcessId")
 )
 
 func GetDynamicTimeZoneInformation(timeZoneInformation *DynamicTimeZoneInformation) (err error) {
@@ -251,4 +252,9 @@ func SendMessage(hwnd syscall.Handle, msg uint32, wparam, lparam uintptr) (resul
 		return
 	}
 	return
+}
+
+func GetWindowThreadProcessId(hwnd syscall.Handle) uint32 {
+	r1, _, _ := syscall.Syscall(procGetWindowThreadProcessId.Addr(), 2, uintptr(hwnd), 0, 0)
+	return uint32(r1)
 }
